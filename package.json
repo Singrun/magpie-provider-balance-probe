@@ -1,7 +1,7 @@
 {
   "name": "magpie-provider-balance-probe",
-  "version": "1.0.0",
-  "description": "Magpie 第三方 API 中转平台余额配置探针与修复工具 (Sub2API / New-API / One-API / LiteLLM)",
+  "version": "0.0.1",
+  "description": "Magpie plugin for detecting third-party provider balance endpoints and repairing native balance settings",
   "keywords": [
     "magpie",
     "magpie-plugin",
@@ -33,7 +33,9 @@
     "cli.js",
     "src",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md",
+    "SECURITY.md"
   ],
   "exports": {
     ".": "./index.js",

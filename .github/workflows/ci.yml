@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun test
+      - run: node --check index.js
+      - run: node --check cli.js
+      - run: node --check src/cache.js
+      - run: node --check src/configurator.js
+      - run: node --check src/detector.js
+      - run: npm pack --dry-run
