@@ -1,0 +1,68 @@
+{
+  "name": "magpie-provider-balance-probe",
+  "version": "1.0.0",
+  "description": "Magpie 第三方 API 中转平台余额配置探针与修复工具 (Sub2API / New-API / One-API / LiteLLM)",
+  "keywords": [
+    "magpie",
+    "magpie-plugin",
+    "opencode",
+    "opencode-plugin",
+    "provider",
+    "plugin",
+    "balance",
+    "probe",
+    "sub2api",
+    "new-api",
+    "one-api",
+    "litellm"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Singrun/magpie-provider-balance-probe.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Singrun/magpie-provider-balance-probe/issues"
+  },
+  "homepage": "https://github.com/Singrun/magpie-provider-balance-probe#readme",
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "bin": {
+    "magpie-provider-balance-probe": "./cli.js"
+  },
+  "files": [
+    "index.js",
+    "cli.js",
+    "src",
+    "page",
+    "README.md"
+  ],
+  "exports": {
+    ".": "./index.js",
+    "./server": "./index.js"
+  },
+  "magpie": {
+    "icon": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'/%3E%3Ccircle cx='18' cy='6' r='3' fill='%2360a5fa'/%3E%3C/svg%3E",
+    "summary": {
+      "zh": "探测并修复第三方中转余额配置，可显示真实 Provider 余额",
+      "en": "Repair third-party relay balance settings and display real Provider balances"
+    },
+    "options": {
+      "display": true
+    },
+    "page": {
+      "title": "Provider balances",
+      "file": "page/index.html",
+      "icon": "page/icon.svg",
+      "titles": {
+        "zh": "Provider 余额"
+      }
+    }
+  },
+  "scripts": {
+    "test": "bun test",
+    "scan": "bun cli.js",
+    "dry-run": "bun cli.js --dry-run"
+  }
+}

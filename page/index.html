@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Provider 余额</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">MAGPIE PLUGIN</p>
+          <h1>Provider 余额</h1>
+          <p class="subtitle">集中查看余额探针返回的真实 Provider 结果。</p>
+        </div>
+        <details class="options">
+          <summary>选项</summary>
+          <div class="options-panel">
+            <label class="switch-row" for="display-balance">
+              <span>
+                <strong>显示余额结果</strong>
+                <small>控制探针工具是否返回余额明细与合计。</small>
+              </span>
+              <input id="display-balance" type="checkbox">
+            </label>
+            <p id="save-state" class="save-state" role="status"></p>
+          </div>
+        </details>
+      </header>
+
+      <section class="summary" aria-labelledby="summary-title">
+        <div class="summary-heading">
+          <div>
+            <p class="eyebrow">BALANCE SUMMARY</p>
+            <h2 id="summary-title">实时余额</h2>
+          </div>
+          <span class="status-dot" aria-hidden="true"></span>
+        </div>
+        <div class="empty-state">
+          <strong>余额结果由探针工具返回</strong>
+          <p>运行 <code>auto_configure_provider_balances</code> 并开启余额显示后，可在工具结果中查看每个 Provider 及余额合计。</p>
+        </div>
+      </section>
+
+      <p class="note">本页面不读取 Provider 配置、不保存 API Key，也不直接请求第三方接口。</p>
+    </main>
+
+    <script src="_magpie/bridge.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
