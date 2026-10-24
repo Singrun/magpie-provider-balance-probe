@@ -19,7 +19,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Singrun/magpie-provider-balance-probe.git"
+    "url": "git+https://github.com/Singrun/magpie-provider-balance-probe.git"
   },
   "bugs": {
     "url": "https://github.com/Singrun/magpie-provider-balance-probe/issues"
@@ -28,9 +28,6 @@
   "type": "module",
   "main": "index.js",
   "module": "index.js",
-  "bin": {
-    "magpie-provider-balance-probe": "./cli.js"
-  },
   "files": [
     "index.js",
     "cli.js",

@@ -12,7 +12,7 @@ describe("Magpie 页面挂载契约", () => {
     expect(pkg.keywords).toContain("magpie-plugin")
     expect(pkg.keywords).toContain("opencode")
     expect(pkg.keywords).toContain("opencode-plugin")
-    expect(pkg.bin["magpie-provider-balance-probe"]).toBe("./cli.js")
+    expect(pkg.bin).toBeUndefined()
     expect(pkg.files).toContain("page")
     expect(pkg.files).toContain("LICENSE")
     expect(pkg.magpie.page).toEqual({
