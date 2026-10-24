@@ -212,59 +212,6 @@ function numericBalance(value) {
   return undefined
 }
 
-function inferBalancePlatform(provider) {
-  const url = String(provider?.balanceURL || "").toLowerCase()
-  if (url.includes("/api/usage/token")) return "New-API / One-API"
-  if (url.includes("/key/info")) return "LiteLLM Proxy"
-  if (url.endsWith("/usage") || url.includes("/usage?")) return "Sub2API"
-  return "Third-party relay"
-}
-
-function canonicalBalanceSource(provider) {
-  try {
-    const url = new URL(String(provider.balanceURL || ""))
-    for (const key of [...url.searchParams.keys()]) {
-      if (/^(?:key|token|api[_-]?key|balance[_-]?token)$/i.test(key)) {
-        url.searchParams.delete(key)
-      }
-    }
-    return `${url.origin}${url.pathname}${url.search}`
-  } catch {
-    return String(provider?.balanceURL || "")
-      .replace(MAGPIE_BALANCE_PLACEHOLDER, "")
-  }
-}
-
-function observationFor(provider, balance, platform = inferBalancePlatform(provider)) {
-  return {
-    id: provider.id,
-    name: provider.name || provider.id,
-    platform,
-    balance,
-    source: canonicalBalanceSource(provider),
-  }
-}
-
-export function buildThirdPartyBalanceSummary(observations) {
-  const valid = observations.filter(item => Number.isFinite(item.balance))
-  const total = valid.reduce((sum, item) => sum + item.balance, 0)
-  const balances = valid.map(item => ({
-    id: item.id,
-    name: item.name,
-    platform: item.platform,
-    balance: item.balance,
-    source: item.source,
-  }))
-
-  return {
-    currency: "USD",
-    providerCount: valid.length,
-    total,
-    balances,
-    providers: balances,
-  }
-}
-
 /**
  * 校验供应商现有 BalanceURL 的健康状态
  */
@@ -352,9 +299,7 @@ export async function autoConfigureProviders(options = {}) {
     dryRun = false,
     fetchFn = fetch,
     signal,
-    display = false,
   } = options
-  const showBalanceSummary = Boolean(display)
   const filePath = getMagpieProvidersPath(customDir)
 
   let content
@@ -402,7 +347,6 @@ export async function autoConfigureProviders(options = {}) {
   }
   const plannedUpdates = new Map()
   const results = []
-  const observations = []
 
   // 并发池探测，限制并发数为 6
   const queue = [...data.providers]
@@ -425,20 +369,11 @@ export async function autoConfigureProviders(options = {}) {
       }
       if (signal?.aborted) break
 
-      let existingHealth
-      if (showBalanceSummary && provider.balanceURL && provider.balancePath) {
-        existingHealth = await checkBalanceHealth(provider, fetchFn, signal)
-        if (existingHealth.healthy && Number.isFinite(existingHealth.balance)) {
-          observations.push(observationFor(provider, existingHealth.balance))
-        }
-      }
-
       const needsConfig = await shouldConfigureProvider(
         provider,
         force,
         fetchFn,
         signal,
-        existingHealth,
       )
       const providerName = provider.name || provider.id
 
@@ -449,14 +384,6 @@ export async function autoConfigureProviders(options = {}) {
       const probeRes = await probe(provider, fetchFn, signal)
 
       if (probeRes.detected) {
-        if (showBalanceSummary && !existingHealth?.healthy) {
-          const sampledBalance = numericBalance(
-            String(probeRes.sampleBalance || "").replace(/[$,]/g, "")
-          )
-          if (sampledBalance !== undefined) {
-            observations.push(observationFor(provider, sampledBalance, probeRes.platform))
-          }
-        }
         const oldConfig = {
           balanceURL: provider.balanceURL || null,
           balancePath: provider.balancePath || null,
@@ -469,7 +396,6 @@ export async function autoConfigureProviders(options = {}) {
           balancePath: probeRes.balancePath,
           balanceMethod: probeRes.balanceMethod || "GET",
           platform: probeRes.platform,
-          sampleBalance: probeRes.sampleBalance,
           oldConfig,
           changed:
             (provider.balanceURL || null) !== probeRes.balanceURL ||
@@ -498,9 +424,6 @@ export async function autoConfigureProviders(options = {}) {
       error: "余额配置任务已取消，未写入 providers.json",
       filePath,
       results,
-      ...(showBalanceSummary
-        ? { balanceSummary: buildThirdPartyBalanceSummary(observations) }
-        : {}),
     }
   }
 
@@ -516,7 +439,6 @@ export async function autoConfigureProviders(options = {}) {
         platform: update.platform,
         balanceURL: update.balanceURL,
         balancePath: update.balancePath,
-        sampleBalance: update.sampleBalance,
         oldConfig: update.oldConfig,
       })
     }
@@ -526,9 +448,6 @@ export async function autoConfigureProviders(options = {}) {
       hasChanges: [...plannedUpdates.values()].some(update => update.changed),
       dryRun: true,
       results,
-      ...(showBalanceSummary
-        ? { balanceSummary: buildThirdPartyBalanceSummary(observations) }
-        : {}),
     }
   }
 
@@ -540,9 +459,6 @@ export async function autoConfigureProviders(options = {}) {
       hasChanges: false,
       dryRun: false,
       results,
-      ...(showBalanceSummary
-        ? { balanceSummary: buildThirdPartyBalanceSummary(observations) }
-        : {}),
     }
   }
 
@@ -599,7 +515,6 @@ export async function autoConfigureProviders(options = {}) {
           platform: update.platform,
           balanceURL: update.balanceURL,
           balancePath: update.balancePath,
-          sampleBalance: update.sampleBalance,
           oldConfig: update.oldConfig,
         })
       } else {
@@ -638,9 +553,6 @@ export async function autoConfigureProviders(options = {}) {
       success: false,
       error: `原子更新 providers.json 失败: ${err.message}`,
       results,
-      ...(showBalanceSummary
-        ? { balanceSummary: buildThirdPartyBalanceSummary(observations) }
-        : {}),
     }
   } finally {
     if (releaseLock) await releaseLock()
@@ -652,8 +564,5 @@ export async function autoConfigureProviders(options = {}) {
     hasChanges: hasActualChanges,
     dryRun: false,
     results,
-    ...(showBalanceSummary
-      ? { balanceSummary: buildThirdPartyBalanceSummary(observations) }
-      : {}),
   }
 }

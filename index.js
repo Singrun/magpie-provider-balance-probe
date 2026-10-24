@@ -5,15 +5,11 @@
 
 import { autoConfigureProviders } from "./src/configurator.js"
 
-const ProviderBalanceProbePlugin = async (_input, pluginOptions) => {
-  const defaults = {
-    display: pluginOptions?.display === undefined ? true : Boolean(pluginOptions.display),
-  }
-
+const ProviderBalanceProbePlugin = async () => {
   return {
     tool: {
       auto_configure_provider_balances: {
-        description: "按需探测 Sub2API、New-API / One-API、LiteLLM 专用配额接口，修复 Magpie 原生余额配置，并可显示第三方余额汇总",
+        description: "按需探测 Sub2API、New-API / One-API、LiteLLM 专用余额接口，并修复 Magpie 原生余额配置",
         args: {
           type: "object",
           properties: {
@@ -21,18 +17,12 @@ const ProviderBalanceProbePlugin = async (_input, pluginOptions) => {
               type: "boolean",
               description: "是否重新探测默认 API Key 鉴权的供应商（可选；不会探测自定义认证供应商）",
             },
-            display: {
-              type: "boolean",
-              description: "是否返回真实 Provider 的余额明细与合计",
-            },
           },
         },
         async execute(args, ctx) {
-          const display = args?.display === undefined ? defaults.display : Boolean(args.display)
           const res = await autoConfigureProviders({
             force: Boolean(args?.force),
             signal: ctx?.abort,
-            display,
           })
           return JSON.stringify(res, null, 2)
         },

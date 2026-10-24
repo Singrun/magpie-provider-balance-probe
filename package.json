@@ -32,7 +32,6 @@
     "index.js",
     "cli.js",
     "src",
-    "page",
     "LICENSE",
     "README.md"
   ],
@@ -43,19 +42,8 @@
   "magpie": {
     "icon": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'/%3E%3Ccircle cx='18' cy='6' r='3' fill='%2360a5fa'/%3E%3C/svg%3E",
     "summary": {
-      "zh": "探测并修复第三方中转余额配置，可显示真实 Provider 余额",
-      "en": "Repair third-party relay balance settings and display real Provider balances"
-    },
-    "options": {
-      "display": true
-    },
-    "page": {
-      "title": "Provider balances",
-      "file": "page/index.html",
-      "icon": "page/icon.svg",
-      "titles": {
-        "zh": "Provider 余额"
-      }
+      "zh": "识别第三方中转余额接口并修复 Magpie 原生余额配置",
+      "en": "Detect third-party provider balance endpoints and repair Magpie settings"
     }
   },
   "scripts": {

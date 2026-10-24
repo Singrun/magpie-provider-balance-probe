@@ -123,7 +123,7 @@ export function extractBaseURL(provider) {
 
 /**
  * 核心探针方法：对单个 Provider 执行平台指纹探测
- * 返回 Magpie 原生字段配置：{ detected, platform, balanceURL, balancePath, balanceMethod, sampleBalance }
+ * 返回 Magpie 原生字段配置：{ detected, platform, balanceURL, balancePath, balanceMethod }
  */
 export async function probe(provider, fetchFn = fetch, signal) {
   if (!provider || typeof provider !== "object") {
@@ -178,16 +178,12 @@ export async function probe(provider, fetchFn = fetch, signal) {
             ? Number(d.remaining)
             : Number.NaN
         if (!Number.isFinite(remaining)) continue
-        let sampleBalance = ""
-        sampleBalance = `$${remaining.toFixed(2)}`
-
         const out = {
           detected: true,
           platform: "Sub2API",
           balanceURL: url, // 严格保留命中的实际 URL (含自定义前缀)
           balancePath: "$remaining",
           balanceMethod: "GET",
-          sampleBalance,
         }
         setCachedProbe(cacheKey, out)
         return out
@@ -232,14 +228,12 @@ export async function probe(provider, fetchFn = fetch, signal) {
         const hasNumericQuota = Number.isFinite(numericQuota)
 
         if (isUnlimited && hasNumericQuota) {
-          const sampleBalance = `$${(numericQuota / 500000).toFixed(2)}`
           const out = {
             detected: true,
             platform: "New-API / One-API",
             balanceURL: url,
             balancePath,
             balanceMethod: "GET",
-            sampleBalance,
             unlimited: true,
           }
           setCachedProbe(cacheKey, out)
@@ -254,14 +248,12 @@ export async function probe(provider, fetchFn = fetch, signal) {
         }
 
         if (hasNumericQuota) {
-          const sampleBalance = `$${(numericQuota / 500000).toFixed(2)}`
           const out = {
             detected: true,
             platform: "New-API / One-API",
             balanceURL: url,
             balancePath,
             balanceMethod: "GET",
-            sampleBalance,
           }
           setCachedProbe(cacheKey, out)
           return out
@@ -288,15 +280,12 @@ export async function probe(provider, fetchFn = fetch, signal) {
       const info = litellmRes.data.info || litellmRes.data
       if (typeof info.max_budget === "number" && Number.isFinite(info.max_budget) &&
           typeof info.spend === "number" && Number.isFinite(info.spend)) {
-        const remaining = Math.max(0, info.max_budget - info.spend)
-
         const out = {
           detected: true,
           platform: "LiteLLM Proxy",
           balanceURL: `${infoBase}?key={key}`,
           balancePath: "info.max_budget - info.spend",
           balanceMethod: "GET",
-          sampleBalance: `$${remaining.toFixed(2)}`,
         }
         setCachedProbe(cacheKey, out)
         return out

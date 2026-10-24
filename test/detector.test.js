@@ -69,7 +69,6 @@ describe("智能探测与原生 Balance 配置推导测试 (Mock 网络)", () =>
     expect(res.balanceURL).toBe("https://my-sub2api.example.com/v1/usage")
     expect(res.balancePath).toBe("$remaining")
     expect(res.balanceMethod).toBe("GET")
-    expect(res.sampleBalance).toBe("$100.50")
   })
 
   test("严格保留自定义前缀路径，不盲目截断为 origin", async () => {
@@ -123,7 +122,6 @@ describe("智能探测与原生 Balance 配置推导测试 (Mock 网络)", () =>
     expect(res.platform).toBe("New-API / One-API")
     expect(res.balanceURL).toBe("https://my-newapi.example.com/api/usage/token")
     expect(res.balancePath).toBe("$data.total_available / 500000")
-    expect(res.sampleBalance).toBe("$3.00")
   })
 
   test("New-API 直接返回结构使用根级 BalancePath", async () => {
@@ -173,7 +171,6 @@ describe("智能探测与原生 Balance 配置推导测试 (Mock 网络)", () =>
     const res = await probe(provider, mockFetch)
     expect(res.detected).toBe(true)
     expect(res.balanceURL).toBe("https://relay.example.com/api/usage/token")
-    expect(res.sampleBalance).toBe("$2.00")
   })
 
   test("探测命中 LiteLLM Proxy 平台并生成原生带有 {key} 的 BalanceURL", async () => {
@@ -202,7 +199,6 @@ describe("智能探测与原生 Balance 配置推导测试 (Mock 网络)", () =>
     expect(res.platform).toBe("LiteLLM Proxy")
     expect(res.balanceURL).toBe("https://litellm.example.com/key/info?key={key}")
     expect(res.balancePath).toBe("info.max_budget - info.spend")
-    expect(res.sampleBalance).toBe("$14.50")
   })
 
   test("通用探针不把 Sub2API 非余额结构或 LiteLLM 单独 spend 字段误配成余额", async () => {

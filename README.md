@@ -8,8 +8,8 @@
 ## 功能
 
 - 为可识别的第三方 Provider 补全或修复 Magpie 原生 `BalanceURL`、`BalancePath` 和 `BalanceMethod`。
-- 通过插件工具按需运行；提供独立页面管理余额结果显示选项。
-- 可选择返回已有余额明细和直接合计，不做 URL 去重，也不显示用量。
+- 按需探测已知第三方平台余额接口，返回识别平台与配置修复状态。
+- 不提供余额显示、汇总、用量或去重功能；余额由 Magpie 原生余额界面负责展示。
 - 未识别的平台或响应结构不会被当作余额接口写入配置。
 
 ## 安装
@@ -31,16 +31,13 @@ GitHub 发现列表由 Magpie 定期刷新，添加 topic 后可能需要几分�
 
 ## 使用
 
-启用后，插件注册 `auto_configure_provider_balances` 工具。默认调用会检查尚未配置或当前余额接口不健康的受支持 Provider，并修复识别到的余额配置。工具可接收以下可选参数：
+启用后，插件注册 `auto_configure_provider_balances` 工具。默认调用会检查尚未配置或当前余额接口不健康的受支持 Provider，并修复识别到的余额配置。工具提供一个可选参数：
 
 | 参数 | 默认值 | 作用 |
 | --- | --- | --- |
 | `force` | `false` | 重新探测默认 API Key 鉴权的 Provider。带自定义 `BalanceToken` 或请求头的 Provider 不会自动探测。 |
-| `display` | 插件选项中的设置，默认为 `true` | 返回余额明细与合计。设为 `false` 时不生成余额汇总。 |
 
-余额数据在工具返回值的 `balanceSummary` 中：`balances` 列出每个有效 Provider，`total` 是明细的直接合计。使用相同中转站的多个 Key 会分别列出并分别计入合计。
-
-插件页面可调整 `display` 开关。受 Magpie 页面权限限制，该页面只管理选项，不读取 Provider 配置或工具执行结果；余额数据由工具返回。
+工具结果报告识别平台、拟议或已应用的余额配置以及未识别原因，不返回 Provider 余额数值。配置成功后，Magpie 原生余额功能使用写入的 `BalanceURL` 和 `BalancePath` 读取余额。
 
 ## 支持范围
 
@@ -60,7 +57,7 @@ GitHub 发现列表由 Magpie 定期刷新，添加 topic 后可能需要几分�
 - 网络请求使用 Provider API Key，限制超时和响应体大小，并拒绝自动跟随重定向。
 - 带自定义余额 Token 或请求头的 Provider 跳过自动探测，避免以错误认证覆盖用户配置。
 - 配置写入前创建备份，并采用锁、冲突检查和原子替换；只更新余额配置字段。
-- 不注销账号、不删除 Provider、不修改 API Key。余额明细和合计不会按 Provider URL 去重。
+- 不注销账号、不删除 Provider、不修改 API Key，也不汇总或展示余额数值。
 
 ## 独立 CLI
 
@@ -70,7 +67,6 @@ GitHub 发现列表由 Magpie 定期刷新，添加 topic 后可能需要几分�
 bun cli.js --dry-run  # 预检，不写入配置
 bun cli.js            # 应用识别到的余额配置
 bun cli.js --force    # 重新探测默认认证的 Provider
-bun cli.js --display  # 同时读取并输出余额明细与合计
 ```
 
 CLI 直接读取当前 Magpie 配置目录中的 `providers.json`。运行前请先用 `--dry-run` 检查拟议变更。

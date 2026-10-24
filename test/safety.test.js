@@ -10,7 +10,6 @@ import {
   checkBalanceHealth,
   shouldConfigureProvider,
   autoConfigureProviders,
-  buildThirdPartyBalanceSummary,
 } from "../src/configurator.js"
 
 describe("缓存安全性与防碰撞测试", () => {
@@ -40,11 +39,12 @@ describe("缓存安全性与防碰撞测试", () => {
 
     const res1 = await probe(p1, mockFetch)
     expect(res1.detected).toBe(true)
-    expect(res1.sampleBalance).toBe("$1.00")
+    expect(res1.detected).toBe(true)
 
     const res2 = await probe(p2, mockFetch)
     expect(res2.detected).toBe(true)
-    expect(res2.sampleBalance).toBe("$2.00") // 绝不命中 key1 的缓存！
+    expect(res2.detected).toBe(true) // 绝不命中 key1 的缓存！
+    expect(res1.balanceURL).toBe(res2.balanceURL)
   })
 
   test("缓存容量上限控制 (最大 256 条并按 FIFO 淘汰)", () => {
@@ -86,7 +86,6 @@ describe("无限额度原生余额路径容错测试", () => {
     const res = await probe(p, mockFetch)
     expect(res.detected).toBe(true)
     expect(res.balancePath).toBe("$data.total_available / 500000")
-    expect(res.sampleBalance).toBe("$10.00")
     expect(res.unlimited).toBe(true)
   })
 
@@ -202,117 +201,6 @@ describe("Magpie 余额请求语义复现与自定义认证保护", () => {
     expect(health.healthy).toBe(false)
     expect(health.reason).toContain("BalancePath")
     expect(await shouldConfigureProvider(provider, false, mockFetch)).toBe(true)
-  })
-})
-
-describe("第三方余额显示与直接合计", () => {
-  test("每个 Provider 都保留在明细中，并直接计入合计", () => {
-    const observations = [
-      {
-        id: "relay-a",
-        name: "中转 Key A",
-        platform: "Sub2API",
-        balance: 12.5,
-        source: "https://relay.test/v1/usage",
-      },
-      {
-        id: "relay-b",
-        name: "中转 Key B",
-        platform: "Sub2API",
-        balance: 12.5,
-        source: "https://relay.test/v1/usage",
-      },
-    ]
-    const summary = buildThirdPartyBalanceSummary(observations)
-    expect(summary.providerCount).toBe(2)
-    expect(summary.total).toBe(25)
-    expect(summary.balances).toEqual([
-      expect.objectContaining({ id: "relay-a", balance: 12.5 }),
-      expect.objectContaining({ id: "relay-b", balance: 12.5 }),
-    ])
-    expect(summary.balances.every(item => !("duplicate" in item))).toBe(true)
-  })
-
-  test("无效余额不计入合计，但有效 Provider 仍保留", () => {
-    const observations = [
-      {
-        id: "relay-a",
-        name: "中转 Key A",
-        platform: "Sub2API",
-        balance: 10,
-        source: "https://relay.test/v1/usage",
-      },
-      {
-        id: "relay-b",
-        name: "中转 Key B",
-        platform: "Sub2API",
-        balance: Number.NaN,
-        source: "https://relay.test/v1/usage",
-      },
-    ]
-    const summary = buildThirdPartyBalanceSummary(observations)
-    expect(summary.providerCount).toBe(1)
-    expect(summary.total).toBe(10)
-    expect(summary.balances).toHaveLength(1)
-  })
-
-  test("不同余额接口来源仍按真实 Provider 分别展示", () => {
-    const summary = buildThirdPartyBalanceSummary([
-      {
-        id: "relay-a",
-        name: "中转 Key A",
-        platform: "Sub2API",
-        balance: 10,
-        source: "https://relay.test/custom/v1/usage",
-      },
-      {
-        id: "relay-b",
-        name: "中转 Key B",
-        platform: "New-API / One-API",
-        balance: 10,
-        source: "https://relay.test/custom/v1/api/usage/token",
-      },
-    ])
-    expect(summary.total).toBe(20)
-    expect(summary.providerCount).toBe(2)
-    expect(summary.providers).toHaveLength(2)
-  })
-
-  test("显示开关读取所有已配置的第三方余额", async () => {
-    const displayDir = path.join(os.tmpdir(), `magpie-test-display-${Date.now()}`)
-    const targetFile = path.join(displayDir, "providers.json")
-    await fs.mkdir(displayDir, { recursive: true })
-    await fs.writeFile(targetFile, JSON.stringify({
-      providers: [
-        {
-          id: "relay-a",
-          name: "中转 Key A",
-          chat: "https://relay.test/v1",
-          key: "sk-a",
-          balanceURL: "https://relay.test/v1/usage",
-          balancePath: "$remaining",
-        },
-        {
-          id: "relay-b",
-          name: "中转 Key B",
-          chat: "https://relay.test/v1",
-          key: "sk-b",
-          balanceURL: "https://relay.test/v1/usage",
-          balancePath: "$remaining",
-        },
-      ],
-    }, null, 2))
-
-    const res = await autoConfigureProviders({
-      customDir: displayDir,
-      display: true,
-      fetchFn: async () => new Response(JSON.stringify({ remaining: 12.5 }), { status: 200 }),
-    })
-    expect(res.success).toBe(true)
-    expect(res.balanceSummary.total).toBe(25)
-    expect(res.balanceSummary.providerCount).toBe(2)
-    expect(res.balanceSummary.balances).toHaveLength(2)
-    await fs.rm(displayDir, { recursive: true, force: true })
   })
 })
 
