@@ -34,10 +34,12 @@ Magpie 插件入口注册 `auto_configure_provider_balances` 工具。工具提�
 插件声明一个独立页面，名称为“Provider 余额”：
 
 ```bash
-magpie plugin add /Users/singrun/DEV/G
-magpie plugin on /Users/singrun/DEV/G
+magpie plugin add Singrun/magpie-provider-balance-probe
+magpie plugin on github:Singrun/magpie-provider-balance-probe
 magpie plugin
 ```
+
+GitHub 仓库带有 `magpie-plugin` topic，会出现在 Magpie 的 `Plugins → Discover → Unofficial, on GitHub`。该列表表示来自 GitHub 的社区插件，不代表 Magpie 官方审核或背书。也可以在本地开发时从项目目录添加：`magpie plugin add /path/to/magpie-provider-balance-probe`。
 
 确认列表中出现：
 

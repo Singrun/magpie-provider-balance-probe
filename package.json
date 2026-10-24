@@ -36,6 +36,7 @@
     "cli.js",
     "src",
     "page",
+    "LICENSE",
     "README.md"
   ],
   "exports": {
